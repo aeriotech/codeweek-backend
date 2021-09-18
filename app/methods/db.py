@@ -11,13 +11,14 @@ def _getProductDB_(ean):
 	return returned if len(returned)>0 else False
 
 def _getProductAPI_(ean):
-	returned = requests.get("http://bazil.si/api/v2/search/?code="+str(ean))
-	if returned.status_code = 404:
+	returned = requests.get("http://bazil.si/api/v2/search/?code="+str(ean), headers={"Authorization": "Bearer 1J0i8MmV2BQWJrgcVnGU"})
+	if returned.status_code == 404:
 		return False
 	return json.loads(returned.text)
 
 def _addProductToCache_(ean):
 	productJson = _getProductAPI_(ean)
+	print(productJson)
 	_cur_.execute("INSERT INTO products (ean, name) VALUES (%s, %s)", (str(ean), productJson[0]["NAME"]))
 	_conn_.commit()
 	return productJson
