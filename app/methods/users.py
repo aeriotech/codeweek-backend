@@ -27,6 +27,13 @@ def getUsernameById(userId):
     ))
     return curs.fetchone()
 
+def getUserByToken(token):
+    decodedJson = json.loads(base64.b64decode(token))
+    curs.execute(sql.SQL("SELECT id, username, points, has_premium FROM users WHERE id={ajdi}").format(
+        ajdi=sql.Literal(decodedJson["userId"])
+    ))
+    return curs.fetchone()
+
 def getUserIdByUsername(username):
     curs.execute(sql.SQL("SELECT id FROM users WHERE username={usernameIn}").format(
         usernameIn=sql.Literal(username)

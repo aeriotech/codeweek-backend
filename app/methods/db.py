@@ -18,7 +18,6 @@ def _getProductAPI_(ean):
 
 def _addProductToCache_(ean):
 	productJson = _getProductAPI_(ean)
-	print(productJson)
 	_cur_.execute("INSERT INTO products (ean, name) VALUES (%s, %s)", (str(ean), productJson[0]["NAME"]))
 	_conn_.commit()
 	return productJson
