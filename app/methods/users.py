@@ -2,6 +2,8 @@ import uuid
 import psycopg2
 from psycopg2 import sql
 import bcrypt
+import base64
+import json
 
 pepper = "pepper cool"
 conn = psycopg2.connect("dbname='main' user='postgres' host='192.168.0.110' password='123456789'")
@@ -31,6 +33,17 @@ def getUserIdByUsername(username):
     ))
     return curs.fetchone()
 
+def confirmAccessToken(accessTokenIn):
+    jsonString = base64.b64decode(accessTokenIn)
+    jsonParsed = json.loads(jsonString)
+    
+    return userExists(jsonParsed['userId'])
+
+def generateAccessToken(userId):
+    jsonString = '{"userId": "' + userId + '"}'
+
+    return base64.b64encode(jsonString.encode('utf-8')).decode('utf-8')
+
 
 def createUser(username, password):
     if userExistsByUsername(username) is True:
@@ -59,3 +72,20 @@ def deleteUser(userId):
     ))
     conn.commit()
     return userId
+
+def login(username, password):
+    curs.execute(sql.SQL("SELECT password,id,salt FROM users WHERE username={usernameIn}").format(
+        usernameIn=sql.Literal(username)
+    ))
+    passwordDB = curs.fetchone()
+
+    if passwordDB is None:
+        return None
+    if not len(passwordDB)==3:
+        return None
+
+    if not bcrypt.checkpw(password.encode('utf-8'), passwordDB[0].replace("b'", "").replace("'", "").encode('utf-8')):
+        return None
+
+    return generateAccessToken(passwordDB[1])
+    

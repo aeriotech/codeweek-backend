@@ -23,3 +23,14 @@ Here is what an example request would look like:
 }
 ```
 A successfull request will return the `userId` that was deleted with the response code 200. If the JSON is malfored or the user by that id does not eixst, the status code 400 is returned.
+
+##### /login - POST
+This endpoint is used to generate an access token from the username and password. It will expect a JSON body with the fields `username` and `password`.
+Here is what an example request would look like:
+```
+{
+    "username": "Johny",
+    "password": "password1"
+}
+```
+A successfull request will return the `accessToken` with the response code 200. If the JSON is malfored, the status code 400 is returned. If the username or password are incorrect then the status code 401 is returned.

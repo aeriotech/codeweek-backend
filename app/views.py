@@ -36,3 +36,18 @@ def deleteUserEndpoint():
     if userId is None:
         return "400; user does not exist", 400
     return f"{userId}", 200
+
+@app.route("/login", methods=['POST'])
+def loginEndpoint():
+    data = request.get_json()
+    try:
+        username = data['username']
+        password = data['password']
+        if username is None or password is None:
+            return "400; malformed json/invalid syntax", 400
+    except KeyError:
+        return "400; malformed json/invalid syntax", 400
+    accessToken = users.login(username, password)
+    if accessToken is None:
+        return "401; invalid username/password", 401
+    return f"{accessToken}", 200
