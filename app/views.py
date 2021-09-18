@@ -1,5 +1,5 @@
 from flask import request
-from api import app
+from app import app
 
 
 @app.route("/")
