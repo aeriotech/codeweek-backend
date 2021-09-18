@@ -19,4 +19,20 @@ def createUserEndpoint():
     except KeyError:
         return "400; malformed json/invalid syntax", 400
     userId = users.createUser(username, password)
+    if userId is None:
+        return "400; username already taken", 400
+    return f"{userId}", 200
+
+@app.route("/deleteUser", methods=['POST'])
+def deleteUserEndpoint():
+    data = request.get_json()
+    try:
+        userId = data['userId']
+        if userId is None:
+            return "400; malformed json/invalid syntax", 400
+    except KeyError:
+        return "400; malformed json/invalid syntax", 400
+    userId = users.deleteUser(userId)
+    if userId is None:
+        return "400; user does not exist", 400
     return f"{userId}", 200
