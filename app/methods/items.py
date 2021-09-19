@@ -14,10 +14,11 @@ def getUserThings(user_id):
     return([] if r is None else r)
 
 
-def insertThing(user_id, ean, exp=None):
-    _cur_.execute("INSERT INTO \"itemInstances\" (owner_id, ean, expiration_timestamp) VALUES (%s, %s, %s)",
-                  (user_id, ean, "0" if exp is None else exp))
-    _conn_.commit()
+def insertThing(user_id, ean, number=1, exp=None):
+    for x in range(number)
+        _cur_.execute("INSERT INTO \"itemInstances\" (owner_id, ean, expiration_timestamp) VALUES (%s, %s, %s)",
+                      (user_id, ean, "0" if exp is None else exp))
+        _conn_.commit()
 
 
 def deleteThing(id):

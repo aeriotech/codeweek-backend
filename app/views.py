@@ -73,6 +73,10 @@ def getItems():
 @app.route("/items/new", methods=["POST"])
 def newItem():
     data = request.get_json()
+    if "number" in request.args:
+        number = request.args["number"]
+    else:
+        number = 1
     try:
         ean = data["ean"]
         if ean is None:
@@ -89,9 +93,9 @@ def newItem():
     try:
         expiration = data["expiration"]
     except KeyError:
-        items.insertThing(user[0], ean)
+        items.insertThing(user[0], ean, number=number)
     else:
-        items.insertThing(user[0], ean, expiration)
+        items.insertThing(user[0], ean, exp=expiration, number=number)
     return ("200; Item Added", 200)
 
 

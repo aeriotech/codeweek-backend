@@ -52,6 +52,7 @@ An example request looks like:
     "expiration":"11335535"
 }
 ```
+Here you can use the number parameter to set the amount of items of the same type and expiration date that'll be inserted
 It returns a code 200, if the item was succesfully added.
 
 ##### /items/delete - POST
@@ -132,3 +133,8 @@ Expects a JSON body:
 }
 ```
 Returns OK if succesfully added
+
+##### /ean/code - GET
+**This endpoint doesn't require autentication**
+Substitute code with a valid EAN code and get a JSON response
+
