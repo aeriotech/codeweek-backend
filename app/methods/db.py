@@ -3,7 +3,8 @@ import json
 import requests
 from . import general
 
-_conn_ = psycopg2.connect(dbname="main", user="postgres", password="123456789", host="192.168.0.110")
+_conn_ = psycopg2.connect(dbname="main", user="postgres",
+                          password="123456789", host="192.168.0.110")
 _cur_ = _conn_.cursor()
 
 def getInfoByEan(ean):

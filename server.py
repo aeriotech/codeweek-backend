@@ -1,4 +1,8 @@
 from app.views import app
 
+PORT = 5000
+HOST = "0.0.0.0"
+DEBUG = True
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host=HOST, port=PORT, debug=DEBUG)
