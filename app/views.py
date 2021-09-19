@@ -1,7 +1,8 @@
 from flask import request
 from psycopg2.sql import NULL
 from app import app
-from app.methods import users, items
+from app.methods import users, items, recipes, general
+import json
 
 
 @app.route("/")
@@ -115,3 +116,124 @@ def removeItem():
         else:
             items.deleteThing(str(itemId))
             return "200; deleted", 200
+@app.route("/user/points", methods=["GET"])
+def getPoints():
+    #checks user validity and get ID
+    if request.headers.get("Authorization") == None:
+        return "400; invalid Authorization token", 400
+    token = request.headers.get("Authorization").replace("Bearer ", "")
+    user = users.getUserByToken(token)
+    if user is None:
+        return "404; user not found", 404
+    else:
+        return {
+            "userId":user[0],
+            "points":user[2]
+        }
+
+@app.route("/user/points/add/<number>", methods=["GET"])
+def addPoints(number):
+    #checks user validity and get ID
+    if request.headers.get("Authorization") == None:
+        return "400; invalid Authorization token", 400
+    token = request.headers.get("Authorization").replace("Bearer ", "")
+    user = users.getUserByToken(token)
+    if user is None:
+        return "404; user not found", 404
+    else:
+        return str(users.changePoints(user[0], number))
+
+@app.route("/user/username")
+def getUsername():
+    #checks user validity and get ID
+    if request.headers.get("Authorization") == None:
+        return "400; invalid Authorization token", 400
+    token = request.headers.get("Authorization").replace("Bearer ", "")
+    user = users.getUserByToken(token)
+    if user is None:
+        return "404; user not found", 404
+    else:
+        return {
+            "userId":user[0],
+            "username":user[1]
+        }
+@app.route("/user/premium")
+def getPremium():
+    #checks user validity and get ID
+    if request.headers.get("Authorization") == None:
+        return "400; invalid Authorization token", 400
+    token = request.headers.get("Authorization").replace("Bearer ", "")
+    user = users.getUserByToken(token)
+    if user is None:
+        return "404; user not found", 404
+    else:
+        return {
+            "userId":user[0],
+            "premium":user[3]
+        }
+
+@app.route("/recipes")
+def getRecipes():
+    #checks user validity and get ID
+    if request.headers.get("Authorization") == None:
+        return "400; invalid Authorization token", 400
+    token = request.headers.get("Authorization").replace("Bearer ", "")
+    user = users.getUserByToken(token)
+    if user is None:
+        return "404; user not found", 404
+    else:
+        if "ingredients" in request.args:
+            ingredients = request.args.get("ingredients").split(",")
+            print(recipes.getRecipes(True))
+            print(ingredients)
+            return str([recept for recept in recipes.getRecipes(user[3]) if general.sublist(ingredients, json.loads(recept["ingredients"]))])
+        return str(recipes.getRecipes(user[3]))
+
+@app.route("/recipes/<id>")
+def getRecipe(id):
+    #checks user validity and get ID
+    if request.headers.get("Authorization") == None:
+        return "400; invalid Authorization token", 400
+    token = request.headers.get("Authorization").replace("Bearer ", "")
+    user = users.getUserByToken(token)
+    if user is None:
+        return "404; user not found", 404
+    else:
+        recipe = recipes.getRecipe(id)
+        if len(recipe) == 0:
+            return "404; not found", 404
+        else:
+            recipe = recipe[0]
+        if recipe["premium"]:
+            if user[3]:
+                return recipe
+            else:
+                return "403; you can't get this recipe", 403
+        else:
+            return recipe
+
+@app.route("/recipe/create", methods=["POST"])
+def createRecipe():
+    data = request.get_json()
+    try:
+        name = data["name"]
+        imgUrl = data["imgUrl"]
+        ingredients = data["ingredients"]
+        url = data["url"]
+        procedure = data["procedure"]
+        vegan = data["vegan"]
+        premium = data["premium"]
+        if None in [name, imgUrl, ingredients, url, procedure, vegan, premium]:
+            return "400; malformed json/invalid syntax", 400
+    except KeyError:
+        return "400; malformed json/invalid syntax", 400
+    #checks user validity and get ID
+    if request.headers.get("Authorization") == None:
+        return "400; invalid Authorization token", 400
+    token = request.headers.get("Authorization").replace("Bearer ", "")
+    user = users.getUserByToken(token)
+    if user is None:
+        return "404; user not found", 404
+    else:
+        recipes.addRecipe(name, imgUrl, ingredients, url, procedure, vegan, user[0], premium)
+        return "200; ok", 200

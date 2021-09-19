@@ -34,6 +34,12 @@ def getUserByToken(token):
     ))
     return curs.fetchone()
 
+def getUserById(id):
+    curs.execute(sql.SQL("SELECT id, username, points, has_premium FROM users WHERE id={ajdi}").format(
+        ajdi=sql.Literal(id)
+    ))
+    return curs.fetchone()
+
 def getUserIdByUsername(username):
     curs.execute(sql.SQL("SELECT id FROM users WHERE username={usernameIn}").format(
         usernameIn=sql.Literal(username)
@@ -95,4 +101,14 @@ def login(username, password):
         return None
 
     return generateAccessToken(passwordDB[1])
-    
+
+def changePoints(userId, points):
+    points = int(points)
+    #calculates if the amount of points in the db would be less than 0 if we go through with this request and just makes it 0 if so
+    currentPoints = getUserById(userId)[2]
+    if currentPoints+points<0:
+        new = 0
+    else:
+        new = points+currentPoints
+    curs.execute("UPDATE users SET points = %s WHERE id = %s", (new, userId))
+    return new

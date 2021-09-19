@@ -11,3 +11,10 @@ def mycursor_to_json(mycursor):
 			dicc[rowname] = rv[rownum]
 		out.append(dicc)
 	return out
+def sublist(lst1, lst2):
+	for i1 in lst1:
+		if i1 in lst2:
+			...
+		else:
+			return False
+	return True
