@@ -147,7 +147,7 @@ def addPoints(number):
     if user is None:
         return "404; user not found", 404
     else:
-        return str(users.changePoints(user[0], number))
+        return json.dumps(users.changePoints(user[0], number))
 
 
 @app.route("/user/username")
@@ -196,8 +196,8 @@ def getRecipes():
             ingredients = request.args.get("ingredients").split(",")
             print(recipes.getRecipes(True))
             print(ingredients)
-            return str([recept for recept in recipes.getRecipes(user[3]) if general.sublist(ingredients, json.loads(recept["ingredients"]))])
-        return str(recipes.getRecipes(user[3]))
+            return json.dumps([recept for recept in recipes.getRecipes(user[3]) if general.sublist(ingredients, json.loads(recept["ingredients"]))])
+        return json.dumps(recipes.getRecipes(user[3]))
 
 
 @app.route("/recipes/<id>")
@@ -253,4 +253,4 @@ def createRecipe():
 
 @app.route("/ean/<ean>")
 def getByEan(ean):
-    return str(db.getInfoByEan(ean))
+    return json.dumps(db.getInfoByEan(ean))
