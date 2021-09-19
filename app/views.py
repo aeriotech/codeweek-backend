@@ -74,7 +74,10 @@ def getItems():
 def newItem():
     data = request.get_json()
     if "number" in request.args:
-        number = request.args["number"]
+        try:
+            number = int(request.args["number"])
+        except:
+            return "400; Invalid number", 400
     else:
         number = 1
     try:
