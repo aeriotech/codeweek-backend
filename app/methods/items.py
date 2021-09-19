@@ -15,7 +15,7 @@ def getUserThings(user_id):
 
 
 def insertThing(user_id, ean, number=1, exp=None):
-    for x in range(number)
+    for x in range(number):
         _cur_.execute("INSERT INTO \"itemInstances\" (owner_id, ean, expiration_timestamp) VALUES (%s, %s, %s)",
                       (user_id, ean, "0" if exp is None else exp))
         _conn_.commit()
