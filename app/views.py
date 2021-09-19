@@ -1,7 +1,7 @@
 from flask import request
 from psycopg2.sql import NULL
 from app import app
-from app.methods import users, items, recipes, general, db
+from app.methods import users, items, recipes, general
 import json
 
 
@@ -67,7 +67,7 @@ def getItems():
     if user is None:
         return "404; user not found", 404
     else:
-        return json.dumps(items.getUserThings(user[0]))
+        return items.getUserThings(user[0])
 
 
 @app.route("/items/new", methods=["POST"])
@@ -80,7 +80,7 @@ def newItem():
     except KeyError:
         return "400; malformed json/invalid syntax", 400
     # checks user validity and get ID
-    if request.headers.get("Authorization") is None:
+    if request.headers.get("Authorization") == None:
         return "400; invalid Authorization token", 400
     token = request.headers.get("Authorization").replace("Bearer ", "")
     user = users.getUserByToken(token)
@@ -105,7 +105,7 @@ def removeItem():
     except KeyError:
         return "400; malformed json/invalid syntax", 400
     # checks user validity and get ID
-    if request.headers.get("Authorization") is None:
+    if request.headers.get("Authorization") == None:
         return "400; invalid Authorization token", 400
     token = request.headers.get("Authorization").replace("Bearer ", "")
     user = users.getUserByToken(token)
@@ -147,7 +147,7 @@ def addPoints(number):
     if user is None:
         return "404; user not found", 404
     else:
-        return json.dumps(users.changePoints(user[0], number))
+        return str(users.changePoints(user[0], number))
 
 
 @app.route("/user/username")
@@ -191,13 +191,12 @@ def getRecipes():
     user = users.getUserByToken(token)
     if user is None:
         return "404; user not found", 404
-    else:
-        if "ingredients" in request.args:
-            ingredients = request.args.get("ingredients").split(",")
-            print(recipes.getRecipes(True))
-            print(ingredients)
-            return json.dumps([recept for recept in recipes.getRecipes(user[3]) if general.sublist(ingredients, json.loads(recept["ingredients"]))])
-        return json.dumps(recipes.getRecipes(user[3]))
+    if "ingredients" in request.args:
+        ingredients = request.args.get("ingredients").split(",")
+        print(recipes.getRecipes(True))
+        print(ingredients)
+        return str([recept for recept in recipes.getRecipes(user[3]) if general.sublist(ingredients, json.loads(recept["ingredients"]))])
+    return str(recipes.getRecipes(user[3]))
 
 
 @app.route("/recipes/<id>")
@@ -209,19 +208,15 @@ def getRecipe(id):
     user = users.getUserByToken(token)
     if user is None:
         return "404; user not found", 404
+    recipe = recipes.getRecipe(id)
+    if len(recipe) == 0:
+        return "404; not found", 404
     else:
-        recipe = recipes.getRecipe(id)
-        if len(recipe) == 0:
-            return "404; not found", 404
-        else:
-            recipe = recipe[0]
-        if recipe["premium"]:
-            if user[3]:
-                return recipe
-            else:
-                return "403; you can't get this recipe", 403
-        else:
-            return recipe
+        recipe = recipe[0]
+    if recipe["premium"] and user[3] or not recipe["premium"]:
+        return recipe
+    else:
+        return "403; you can't get this recipe", 403
 
 
 @app.route("/recipe/create", methods=["POST"])
@@ -246,11 +241,6 @@ def createRecipe():
     user = users.getUserByToken(token)
     if user is None:
         return "404; user not found", 404
-    else:
-        recipes.addRecipe(name, imgUrl, ingredients, url,
-                          procedure, vegan, user[0], premium)
-        return "200; ok", 200
-
-@app.route("/ean/<ean>")
-def getByEan(ean):
-    return json.dumps(db.getInfoByEan(ean))
+    recipes.addRecipe(name, imgUrl, ingredients, url,
+                      procedure, vegan, user[0], premium)
+    return "200; ok", 200
