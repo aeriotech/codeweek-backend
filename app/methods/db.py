@@ -17,6 +17,8 @@ def getInfoByEan(ean):
 		if externalDbResult.status_code == 404:
 			return None
 		externalJson = json.loads(externalDbResult.content)
+		if externalJson is None or len(externalJson)==0:
+			return None
 		_cur_.execute("INSERT INTO \"products\" (ean, name) VALUES (%s, %s)", (str(ean), externalJson[0]["NAME"]))
 		_conn_.commit()
 		return getInfoByEan(ean)

@@ -253,4 +253,7 @@ def createRecipe():
 
 @app.route("/ean/<ean>")
 def getByEan(ean):
-    return json.dumps(db.getInfoByEan(ean))
+    res = db.getInfoByEan(ean)
+    if res is None:
+        return "404; Invalid ean code", 404
+    return json.dumps(res)
