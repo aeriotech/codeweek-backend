@@ -21,5 +21,5 @@ def insertThing(user_id, ean, exp=None):
 
 
 def deleteThing(id):
-    _cur_.execute("DELETE FROM \"itemInstances\" WHERE id = %s", (id, ))
-    _conn_.commit()
+	_cur_.execute("DELETE FROM \"itemInstances\" WHERE id = %s", (id, ))
+	_conn_.commit()
