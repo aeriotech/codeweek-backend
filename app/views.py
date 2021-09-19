@@ -9,6 +9,7 @@ import json
 def index():
     return f"{request.url}"
 
+
 @app.route("/createUser", methods=['POST'])
 def createUserEndpoint():
     data = request.get_json()
@@ -24,6 +25,7 @@ def createUserEndpoint():
         return "400; username already taken", 400
     return f"{userId}", 200
 
+
 @app.route("/deleteUser", methods=['POST'])
 def deleteUserEndpoint():
     data = request.get_json()
@@ -37,6 +39,7 @@ def deleteUserEndpoint():
     if userId is None:
         return "400; user does not exist", 400
     return f"{userId}", 200
+
 
 @app.route("/login", methods=['POST'])
 def loginEndpoint():
@@ -53,9 +56,10 @@ def loginEndpoint():
         return "401; invalid username/password", 401
     return f"{accessToken}", 200
 
+
 @app.route("/items", methods=["GET"])
 def getItems():
-    #checks user validity and get ID
+    # checks user validity and get ID
     if request.headers.get("Authorization") == None:
         return "400; invalid Authorization token", 400
     token = request.headers.get("Authorization").replace("Bearer ", "")
@@ -64,6 +68,7 @@ def getItems():
         return "404; user not found", 404
     else:
         return items.getUserThings(user[0])
+
 
 @app.route("/items/new", methods=["POST"])
 def newItem():
@@ -74,21 +79,21 @@ def newItem():
             return "400; malformed json/invalid syntax", 400
     except KeyError:
         return "400; malformed json/invalid syntax", 400
-    #checks user validity and get ID
-    if request.headers.get("Authorization") == None:
+    # checks user validity and get ID
+    if request.headers.get("Authorization") is None:
         return "400; invalid Authorization token", 400
     token = request.headers.get("Authorization").replace("Bearer ", "")
     user = users.getUserByToken(token)
     if user is None:
         return "404; user not found", 404
+    try:
+        expiration = data["expiration"]
+    except KeyError:
+        items.insertThing(user[0], ean)
     else:
-        try:
-            expiration = data["expiration"]
-        except KeyError:
-            items.insertThing(user[0], ean)
-        else:
-            items.insertThing(user[0], ean, expiration)
-        return ("200; Item Added", 200)
+        items.insertThing(user[0], ean, expiration)
+    return ("200; Item Added", 200)
+
 
 @app.route("/items/delete", methods=["POST"])
 def removeItem():
@@ -99,26 +104,26 @@ def removeItem():
             return "400; malformed json/invalid syntax", 400
     except KeyError:
         return "400; malformed json/invalid syntax", 400
-    #checks user validity and get ID
-    if request.headers.get("Authorization") == None:
+    # checks user validity and get ID
+    if request.headers.get("Authorization") is None:
         return "400; invalid Authorization token", 400
     token = request.headers.get("Authorization").replace("Bearer ", "")
     user = users.getUserByToken(token)
     if user is None:
         return "404; user not found", 404
-    else:
-        #verifies that the user is trying to delete their own item only
-        user_items = items.getUserThings(user[0])
-        if len(user_items) == 0:
-            return "401; You can't delete that item/Item doesn't exist!", 401
-        if itemId not in [x["id"] for x in user_items]:
-            return "401; You can't delete that item/Item doesn't exist!", 401
-        else:
-            items.deleteThing(str(itemId))
-            return "200; deleted", 200
+    # verifies that the user is trying to delete their own item only
+    user_items = items.getUserThings(user[0])
+    if len(user_items) == 0:
+        return "401; You can't delete that item/Item doesn't exist!", 401
+    if itemId not in [x["id"] for x in user_items]:
+        return "401; You can't delete that item/Item doesn't exist!", 401
+    items.deleteThing(str(itemId))
+    return "200; deleted", 200
+
+
 @app.route("/user/points", methods=["GET"])
 def getPoints():
-    #checks user validity and get ID
+    # checks user validity and get ID
     if request.headers.get("Authorization") == None:
         return "400; invalid Authorization token", 400
     token = request.headers.get("Authorization").replace("Bearer ", "")
@@ -127,13 +132,14 @@ def getPoints():
         return "404; user not found", 404
     else:
         return {
-            "userId":user[0],
-            "points":user[2]
+            "userId": user[0],
+            "points": user[2]
         }
+
 
 @app.route("/user/points/add/<number>", methods=["GET"])
 def addPoints(number):
-    #checks user validity and get ID
+    # checks user validity and get ID
     if request.headers.get("Authorization") == None:
         return "400; invalid Authorization token", 400
     token = request.headers.get("Authorization").replace("Bearer ", "")
@@ -143,9 +149,10 @@ def addPoints(number):
     else:
         return str(users.changePoints(user[0], number))
 
+
 @app.route("/user/username")
 def getUsername():
-    #checks user validity and get ID
+    # checks user validity and get ID
     if request.headers.get("Authorization") == None:
         return "400; invalid Authorization token", 400
     token = request.headers.get("Authorization").replace("Bearer ", "")
@@ -154,12 +161,14 @@ def getUsername():
         return "404; user not found", 404
     else:
         return {
-            "userId":user[0],
-            "username":user[1]
+            "userId": user[0],
+            "username": user[1]
         }
+
+
 @app.route("/user/premium")
 def getPremium():
-    #checks user validity and get ID
+    # checks user validity and get ID
     if request.headers.get("Authorization") == None:
         return "400; invalid Authorization token", 400
     token = request.headers.get("Authorization").replace("Bearer ", "")
@@ -168,13 +177,14 @@ def getPremium():
         return "404; user not found", 404
     else:
         return {
-            "userId":user[0],
-            "premium":user[3]
+            "userId": user[0],
+            "premium": user[3]
         }
+
 
 @app.route("/recipes")
 def getRecipes():
-    #checks user validity and get ID
+    # checks user validity and get ID
     if request.headers.get("Authorization") == None:
         return "400; invalid Authorization token", 400
     token = request.headers.get("Authorization").replace("Bearer ", "")
@@ -189,9 +199,10 @@ def getRecipes():
             return str([recept for recept in recipes.getRecipes(user[3]) if general.sublist(ingredients, json.loads(recept["ingredients"]))])
         return str(recipes.getRecipes(user[3]))
 
+
 @app.route("/recipes/<id>")
 def getRecipe(id):
-    #checks user validity and get ID
+    # checks user validity and get ID
     if request.headers.get("Authorization") == None:
         return "400; invalid Authorization token", 400
     token = request.headers.get("Authorization").replace("Bearer ", "")
@@ -212,6 +223,7 @@ def getRecipe(id):
         else:
             return recipe
 
+
 @app.route("/recipe/create", methods=["POST"])
 def createRecipe():
     data = request.get_json()
@@ -227,7 +239,7 @@ def createRecipe():
             return "400; malformed json/invalid syntax", 400
     except KeyError:
         return "400; malformed json/invalid syntax", 400
-    #checks user validity and get ID
+    # checks user validity and get ID
     if request.headers.get("Authorization") == None:
         return "400; invalid Authorization token", 400
     token = request.headers.get("Authorization").replace("Bearer ", "")
@@ -235,5 +247,6 @@ def createRecipe():
     if user is None:
         return "404; user not found", 404
     else:
-        recipes.addRecipe(name, imgUrl, ingredients, url, procedure, vegan, user[0], premium)
+        recipes.addRecipe(name, imgUrl, ingredients, url,
+                          procedure, vegan, user[0], premium)
         return "200; ok", 200

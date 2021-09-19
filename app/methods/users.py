@@ -5,8 +5,10 @@ import bcrypt
 import base64
 import json
 
-conn = psycopg2.connect("dbname='main' user='postgres' host='192.168.0.110' password='123456789'")
+conn = psycopg2.connect(
+    "dbname='main' user='postgres' host='192.168.0.110' password='123456789'")
 curs = conn.cursor()
+
 
 def userExists(userId):
     curs.execute(sql.SQL("SELECT username FROM users WHERE id={userIdIn}").format(
@@ -14,17 +16,20 @@ def userExists(userId):
     ))
     return curs.fetchone() is not None
 
+
 def userExistsByUsername(username):
     curs.execute(sql.SQL("SELECT id FROM users WHERE username={usernameIn}").format(
         usernameIn=sql.Literal(username)
     ))
     return curs.fetchone() is not None
 
+
 def getUsernameById(userId):
     curs.execute(sql.SQL("SELECT username FROM users WHERE id={userIdIn}").format(
         userIdIn=sql.Literal(userId)
     ))
     return curs.fetchone()
+
 
 def getUserByToken(token):
     decodedJson = json.loads(base64.b64decode(token))
@@ -33,11 +38,13 @@ def getUserByToken(token):
     ))
     return curs.fetchone()
 
+
 def getUserById(id):
     curs.execute(sql.SQL("SELECT id, username, points, has_premium FROM users WHERE id={ajdi}").format(
         ajdi=sql.Literal(id)
     ))
     return curs.fetchone()
+
 
 def getUserIdByUsername(username):
     curs.execute(sql.SQL("SELECT id FROM users WHERE username={usernameIn}").format(
@@ -45,11 +52,13 @@ def getUserIdByUsername(username):
     ))
     return curs.fetchone()
 
+
 def confirmAccessToken(accessTokenIn):
     jsonString = base64.b64decode(accessTokenIn)
     jsonParsed = json.loads(jsonString)
-    
+
     return userExists(jsonParsed['userId'])
+
 
 def generateAccessToken(userId):
     jsonString = '{"userId": "' + userId + '"}'
@@ -64,16 +73,18 @@ def createUser(username, password):
     userId = str(uuid.uuid4())
     passwordBytes = str(password).encode('utf-8')
     salt = bcrypt.gensalt()
-    hashedPasswd = str(bcrypt.hashpw(passwordBytes, salt))[2:-1] # hashedPasswd becomes a string like "b'dhjjhdfjhj'". By doing [2:-1] it turns into just "dhjjhdfjhj"
-    
+    # hashedPasswd becomes a string like "b'dhjjhdfjhj'". By doing [2:-1] it turns into just "dhjjhdfjhj"
+    hashedPasswd = str(bcrypt.hashpw(passwordBytes, salt))[2:-1]
+
     curs.execute(sql.SQL("INSERT INTO users (id, username, password, salt) VALUES ({userIdIn}, {usernameIn}, {passwordIn}, {saltIn});").format(
         userIdIn=sql.Literal(userId),
         usernameIn=sql.Literal(username),
         passwordIn=sql.Literal(hashedPasswd),
-        saltIn = sql.Literal(salt)
+        saltIn=sql.Literal(salt)
     ))
     conn.commit()
     return userId
+
 
 def deleteUser(userId):
     if userExists(userId) is not True:
@@ -85,6 +96,7 @@ def deleteUser(userId):
     conn.commit()
     return userId
 
+
 def login(username, password):
     curs.execute(sql.SQL("SELECT password,id,salt FROM users WHERE username={usernameIn}").format(
         usernameIn=sql.Literal(username)
@@ -93,7 +105,7 @@ def login(username, password):
 
     if passwordDB is None:
         return None
-    if not len(passwordDB)==3:
+    if len(passwordDB) != 3:
         return None
 
     if not bcrypt.checkpw(password.encode('utf-8'), passwordDB[0].encode('utf-8')):
@@ -101,13 +113,11 @@ def login(username, password):
 
     return generateAccessToken(passwordDB[1])
 
+
 def changePoints(userId, points):
     points = int(points)
-    #calculates if the amount of points in the db would be less than 0 if we go through with this request and just makes it 0 if so
+    # calculates if the amount of points in the db would be less than 0 if we go through with this request and just makes it 0 if so
     currentPoints = getUserById(userId)[2]
-    if currentPoints+points<0:
-        new = 0
-    else:
-        new = points+currentPoints
+    new = 0 if currentPoints + points < 0 else points + currentPoints
     curs.execute("UPDATE users SET points = %s WHERE id = %s", (new, userId))
     return new
