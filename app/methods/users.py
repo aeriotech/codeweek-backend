@@ -5,7 +5,6 @@ import bcrypt
 import base64
 import json
 
-pepper = "pepper cool"
 conn = psycopg2.connect("dbname='main' user='postgres' host='192.168.0.110' password='123456789'")
 curs = conn.cursor()
 
@@ -59,7 +58,7 @@ def createUser(username, password):
     userId = str(uuid.uuid4())
     passwordBytes = str(password).encode('utf-8')
     salt = bcrypt.gensalt()
-    hashedPasswd = str(bcrypt.hashpw(passwordBytes, salt))
+    hashedPasswd = str(bcrypt.hashpw(passwordBytes, salt))[2:-1] # hashedPasswd becomes a string like "b'dhjjhdfjhj'". By doing [2:-1] it turns into just "dhjjhdfjhj"
     
     curs.execute(sql.SQL("INSERT INTO users (id, username, password, salt) VALUES ({userIdIn}, {usernameIn}, {passwordIn}, {saltIn});").format(
         userIdIn=sql.Literal(userId),
@@ -91,7 +90,7 @@ def login(username, password):
     if not len(passwordDB)==3:
         return None
 
-    if not bcrypt.checkpw(password.encode('utf-8'), passwordDB[0].replace("b'", "").replace("'", "").encode('utf-8')):
+    if not bcrypt.checkpw(password.encode('utf-8'), passwordDB[0].encode('utf-8')):
         return None
 
     return generateAccessToken(passwordDB[1])
