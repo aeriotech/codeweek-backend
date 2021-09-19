@@ -1,7 +1,7 @@
 from flask import request
 from psycopg2.sql import NULL
 from app import app
-from app.methods import users, items, recipes, general
+from app.methods import users, items, recipes, general, db
 import json
 
 
@@ -63,7 +63,7 @@ def getItems():
     if user is None:
         return "404; user not found", 404
     else:
-        return items.getUserThings(user[0])
+        return json.dumps(items.getUserThings(user[0]))
 
 @app.route("/items/new", methods=["POST"])
 def newItem():
@@ -237,3 +237,7 @@ def createRecipe():
     else:
         recipes.addRecipe(name, imgUrl, ingredients, url, procedure, vegan, user[0], premium)
         return "200; ok", 200
+
+@app.route("/ean/<ean>")
+def getByEan(ean):
+    return str(db.getInfoByEan(ean))
