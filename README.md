@@ -138,3 +138,6 @@ Returns OK if succesfully added
 **This endpoint doesn't require autentication**
 Substitute code with a valid EAN code and get a JSON response
 
+
+##### /recipes/delete/id - GET
+Substitute id for a valid recipe ID and delete it.

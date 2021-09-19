@@ -261,3 +261,8 @@ def getByEan(ean):
     if res is None:
         return "404; Invalid ean code", 404
     return json.dumps(res)
+
+@app.route("/recipe/delete/<id>")
+def deleteRecipe(id):
+    recipes.deleteRecipe(id)
+    return("200; Ok", 200)

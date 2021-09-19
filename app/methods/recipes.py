@@ -24,3 +24,7 @@ def addRecipe(name, imgUrl, ingredients, url, procedure, vegan, authorId, premiu
     _cur_.execute("INSERT INTO \"recipes\" (\"name\", \"imgUrl\", \"ingredients\", \"url\", \"procedure\", \"vegan\", \"authorId\",  \"premium\") VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
                   (name, imgUrl, ingredients, url, procedure, vegan, authorId, premium, ))
     _conn_.commit()
+
+def deleteRecipe(id):
+    _cur_.execute("DELETE FROM \"recipes\" WHERE id = %s", (id))
+    _conn_.commit()
